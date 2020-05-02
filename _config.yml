@@ -10,4 +10,4 @@ author:
 deploy:
   - type: git
     remote: 'personal-wiki'
-    branch: 
+    branch: 'master'
