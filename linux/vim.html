@@ -1,0 +1,194 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="Stylesheet" type="text/css" href="/wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/wiki/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+    <title>Vim - </title>
+    <meta name="keywords" content=""/>
+    <meta name="description" content=""/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+
+  <body>
+    <div id="container">
+      
+<div id="header">
+  <div class="post-nav"><a href="/wiki/">Home</a>&nbsp;&#187;&nbsp;<a href="/wiki/#linux">linux</a>&nbsp;&#187;&nbsp;Vim
+    <span class="updated">Page Updated&nbsp;
+      2020-05-02 15:02
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">Vim</div>
+
+  <h1 id="_1">模式</h1>
+<h2 id="_2">普通模式</h2>
+<h3 id="7">技巧 7 停顿时请移开画笔</h3>
+<p>就像画家只花一小部分时间涂色一样，程序员也只花一小部分时间编写代码。绝大多数时间用来思考、阅读，以及在代码中穿梭浏览。而且，当确实需要做修改时，谁说一定要切换到插入模式才行？我们可以重新调整已有代码的格式，复制它们，移动其位置，或是删除它们。在普通模式中，我们有众多的工具可以利用。</p>
+<h3 id="8">技巧 8 把撤销单元切成块</h3>
+<p><code>u</code> 键会触发撤销命令，它会撤销最新的修改。<strong>一次修改可以是改变文档内文本的任意操作</strong>，其中包括在普通模式、可视模式以及命令行模式中所触发的命令，而且一次修改也包括了在插入模式中输入（或删除）的文本，因此我们也可以说，<code>i{insert some text}&lt;Esc&gt;</code> 是一次修改。</p>
+<p>在 Vim 中，我们自己可以控制撤销命令的粒度。从进入插入模式开始，直到返回普通模式为止，在此期间输入或删除的任何内容都被当成一次修改。因此，只要我们控制好对 <code>&lt;Esc&gt;</code> 键的使用，就可使撤销命令作用于单词、句子或段落。</p>
+<p>当处于插入模式时，如果光标位于行尾的话，另起一行最快的方式是按 <code>&lt;CR&gt;</code>。不过有时我更喜欢按 <code>&lt;Esc&gt;o</code>，这是因为我有预感，也许在撤销时我想拥有更细的粒度。</p>
+<blockquote>
+<p><strong>NOTE 在插入模式中移动光标会重置修改状态</strong></p>
+<p>如果在插入模式中使用了 <code>&lt;Up&gt;</code> 、<code>&lt;Down&gt;</code> 、<code>&lt;Left&gt;</code> 或 <code>&lt;Right&gt;</code> 这些光标键，将会产生一个新的撤销块。你可以把这想象为先切换回普通模式，然后用 <code>h</code>、<code>j</code>、<code>k</code> 或 <code>l</code> 命令对光标进行了移动，唯一区别是我们并没有退出插入模式。这也会对 <code>.</code> 命令的操作产生影响。</p>
+</blockquote>
+<h3 id="9">技巧 9 构造可重复的修改</h3>
+<p>Vim对重复操作进行了优化，要利用这一点，我们必须考虑该如何构造修改。</p>
+<p>在 Vim 中，要完成一件事，总是有不止一种方式。在评估哪种方式最好时，最显而易见的指标是效率，即哪种手段需要的按键次数最少（又名 <a href="http://vimgolf.com">VimGolf</a>）。</p>
+<h4 id="_3">示例</h4>
+<p>在下例中，假设光标位于行尾处的字符“h”上，而我们想要删除单词“nigh”。</p>
+<ol>
+<li>
+<p>反向删除</p>
+<p><img alt="17539bebe90671215f28693684ddfebc.png" src="evernotecid://41B82D8F-8785-4179-9349-346F92F0F7E1/appyinxiangcom/28253568/ENResource/p125" /></p>
+<p>按 <code>db</code> 命令删除从光标起始位置到单词开头的内容，但会原封未动地留下最后一个字符 “h”，再按一下 <code>x</code> 键就可以删除这个捣乱的字符。这样，整个操作的 VimGolf 得分是 <em>3</em> 分。</p>
+<p>如果我们跟着执行一次 <code>.</code> 命令，它会重复删除一个字符（<code>.</code> == <code>x</code>）。我不觉得这有什么价值。</p>
+</li>
+<li>
+<p>正向删除</p>
+<p><img alt="752772ee75953c094fcb8b90961bb278.png" src="evernotecid://41B82D8F-8785-4179-9349-346F92F0F7E1/appyinxiangcom/28253568/ENResource/p126" /></p>
+<p>我们先用 <code>b</code> 命令把光标移到单词的开头，移动好后，就可以用一个 <code>dw</code> 命令删掉整个单词。这一次的 VimGolf 得分也是 <em>3</em> 分。</p>
+<p>此时用 <code>.</code> 命令会重复 <code>dw</code>，删除从光标位置到下个单词开头的内容。不过因为我们刚好已经在行尾了，并没有“下一个单词”，所以在这个场景里 <code>.</code> 命令没什么用。不过，至少它代表了一个更长点的操作（<code>.</code> == <code>dw</code>）。</p>
+</li>
+<li>
+<p>删除整个单词</p>
+<p>我们也可以使用更为精准的 <code>aw</code> <strong>文本对象（text object）</strong>，而不是用动作命令。</p>
+<p><img alt="c77ca689bd5ebf02bcdb647f5daa1375.png" src="evernotecid://41B82D8F-8785-4179-9349-346F92F0F7E1/appyinxiangcom/28253568/ENResource/p127" /></p>
+<p>你可以把 <code>daw</code> 命令解读为“delete a word”，这样比较容易记忆。</p>
+<p>如果此时我们使用 <code>.</code> 命令，它会重复上次删除单词的命令。这一次，<code>.</code> 命令会做真正有用的事情（<code>.</code> == <code>daw</code>）。</p>
+</li>
+</ol>
+<p><code>daw</code> 可以发挥 <code>.</code> 命令的最大威力，因此我宣布它是本轮的获胜者。</p>
+<h3 id="10">技巧 10 用次数做简单的算术运算</h3>
+<p>很多普通模式命令都可以带一个次数前缀，这样 Vim 就会尝试把该命令执行指定的次数，而不是只执行一次。</p>
+<p><code>&lt;C-a&gt;</code> 和 <code>&lt;C-x&gt;</code> 命令分别对数字执行加和减操作。在不带次数执行时，它们会逐个加减，但如果带一个次数前缀，那么就可以用它们加减任意整数。例如，如果我们把光标移到字符 5 上，执行 <code>10&lt;C-a&gt;</code> 就会把它变成 15。</p>
+<p>文档里说，<code>&lt;C-a&gt;</code> 命令会“把当前光标之上或之后的数值加上[count]”。因此，如果光标不在数字上，那么 <code>&lt;C-a&gt;</code> 命令将在当前行正向查找一个数字，如果找到了，它就径直跳到那里。</p>
+<h4 id="_4">示例</h4>
+<p>我们要对下面的 CSS 代码做一些改动：复制最后一行，用 “news” 替换单词 “blog”，以及把 “0px” 改为 “-180px”。</p>
+<div class="hlcode"><pre><span class="nc">.blog</span><span class="o">,</span> <span class="nc">.news</span> <span class="p">{</span> <span class="k">background-image</span><span class="o">:</span> <span class="sx">url(/sprite.png)</span><span class="p">;</span> <span class="p">}</span>
+<span class="nc">.blog</span> <span class="p">{</span> <span class="k">background-position</span><span class="o">:</span> <span class="m">0px</span> <span class="m">0px</span> <span class="p">}</span>
+</pre></div>
+
+
+<p><img alt="53a76a1144db38619075adc74acb8672.png" src="evernotecid://41B82D8F-8785-4179-9349-346F92F0F7E1/appyinxiangcom/28253568/ENResource/p128" /></p>
+<blockquote>
+<p><strong>NOTE 数字的格式</strong></p>
+<p>Vim 把以 <code>0</code> 开头的数字解释为八进制值，而不是十进制。<br />
+如果想让 Vim 把所有数字都当成十进制，不管它们是不是以 <code>0</code> 开头的，使用下面的命令</p>
+<p><code>set nrformats=</code></p>
+</blockquote>
+<h3 id="11">技巧 11 能够重复，就别用次数</h3>
+<p>如果想要删除两个单词，可以有几种方法：</p>
+<ol>
+<li><code>d2w</code>：我们先调用删除命令，然后以 <code>2w</code> 作为动作命令，我们可以把它解读为“删除两个单词”；</li>
+<li><code>2dw</code>：次数作用于删除命令，而动作命令只跨越一个单词，我们可以把这解读为“做两次删除单词的操作”；</li>
+<li><code>dw.</code>：可以解读为“删除一个单词，然后重复上次的操作”。</li>
+</ol>
+<p><code>d2w</code> 和 <code>2dw</code> 是相同的，在执行完两者中的任一个后，我们可以按 <code>u</code> 键撤销。或者，我们不是用撤销，而是用 <code>.</code> 命令重复执行它，这就会删除后面的两个单词。</p>
+<p>对于 <code>dw.</code> 的情形，按 <code>u</code> 或 <code>.</code> 的结果会有细微的差别。这里的修改是 <code>dw</code>，即删除一个单词。因此，如果想恢复这两个被删除的单词，必须撤销两次，按 <code>uu</code>（或者 <code>2u</code>）。按 <code>.</code> 则只删除后面的一个单词，而不是两个。</p>
+<p>现在假设我们原本是想删除 3 个单词，而不是 2 个。由于判断出了点差错，我们执行了 <code>d2w</code> 而不是 <code>d3w</code>。我们不能使用 <code>.</code> 命令，因为那会总共删除 4 个单词。因此，我们或是先撤销而后修正次数（<code>ud3w</code>），或是继续删除下一个单词（<code>dw</code>）。现在考虑另一种方案，如果我们在第一处地方用的是 <code>dw.</code> 命令，那么我们只要再多重复一次 <code>.</code> 命令就行了。因为我们最初的修改只是简单的 <code>dw</code>，因此 <code>u</code> 命令和 <code>.</code> 命令都具有更细的粒度，每次只作用于一个单词。</p>
+<p>计算次数很是讨厌，因此我宁愿按多次 <code>.</code> 命令，也不愿意只为减少按键的次数，而浪费同样的时间去统计次数。如果我多按了一次 <code>.</code> 命令怎么办？没关系，只要按一次 <code>u</code> 键就可以回退回来。</p>
+<blockquote>
+<p><strong>NOTE 只在必要时使用次数</strong></p>
+<p>假设我们想把文字 “I have a couple of questions” 改为 “I have some more questions”，可以用下面的方式做：</p>
+<p><img alt="abdd41f7efbee56fb5086d5075aa63c9.png" src="evernotecid://41B82D8F-8785-4179-9349-346F92F0F7E1/appyinxiangcom/28253568/ENResource/p129" /></p>
+<p>在此场景中，使用 <code>.</code> 命令的意义不大，我们可以删除一个单词，然后再用 <code>.</code> 命令删除另一个，但随后我们还得切换到插入模式。对我来说这么做很不顺手，我反而更愿意用次数。</p>
+<p>使用次数的另一个好处是：它<strong>保留了一个干净、连贯的撤销历史记录</strong>。完成这次修改后，我们按一下 <code>u</code> 键就可以撤销整个修改。</p>
+</blockquote>
+<h3 id="12">技巧 12 双剑合璧，天下无敌</h3>
+<p>Vim 的强大很大程度上源自操作符与动作命令相结合。</p>
+<div class="hlcode"><pre><span class="err">操作符</span> <span class="o">+</span> <span class="err">动作命令</span> <span class="o">=</span> <span class="err">操作</span>
+</pre></div>
+
+
+<p><code>d{motion}</code> 命令可以对一个字符（<code>dl</code>）、一个完整单词（<code>daw</code>）或一整个段落（<code>dap</code>）进行操作，它作用的范围由动作命令决定。<code>c{motion}</code>、<code>y{motion}</code> 以及其他一些命令也类似，它们被统称为 <strong>操作符（operator）</strong>。</p>
+<p>常见操作符</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>c</code></td>
+<td>修改</td>
+</tr>
+<tr>
+<td><code>d</code></td>
+<td>删除</td>
+</tr>
+<tr>
+<td><code>y</code></td>
+<td>复制到寄存器</td>
+</tr>
+<tr>
+<td><code>g~</code></td>
+<td>反转大小写</td>
+</tr>
+<tr>
+<td><code>gu</code></td>
+<td>转换为小写</td>
+</tr>
+<tr>
+<td><code>gU</code></td>
+<td>转换为大写</td>
+</tr>
+<tr>
+<td><code>&gt;</code></td>
+<td>增加缩进</td>
+</tr>
+<tr>
+<td><code>&lt;</code></td>
+<td>减小缩进</td>
+</tr>
+<tr>
+<td><code>=</code></td>
+<td>自动缩进</td>
+</tr>
+<tr>
+<td><code>!</code></td>
+<td>使用外部程序过滤 <code>{motion}</code> 所跨越的行</td>
+</tr>
+</tbody>
+</table>
+<p>操作符与动作命令的结合形成了一种语法。这种语法的第一条规则很简单，即一个操作由一个操作符，后面跟一个动作命令组成。</p>
+<p>Vim 的语法只有一条额外规则，即当一个操作符命令被连续调用两次时，它会作用于当前行。所以 <code>dd</code> 删除当前行，而 <code>&gt;&gt;</code> 缩进当前行。<code>gU</code> 命令是一种特殊情况，我们既可以用 <code>gUgU</code> ，也可以用简化版的 <code>gUU</code> 来使它作用于当前行。</p>
+<h4 id="_5">扩展命令组合的威力</h4>
+<p>使用 Vim 缺省的操作符和动作命令，我们能够执行的操作的数目是巨大的，然而，我们还可以通过自定义动作命令及操作符来进一步扩充其数目。</p>
+<h5 id="_6">自定义操作符与已有动作命令协同工作</h5>
+<p>随同 Vim 发布的标准操作符集合相对比较少，但我们可以定义新的操作符。TimPope 的 <a href="https:/github.com/tpope/vim-commentary">commentary.vim</a> 插件提供了一个很好的例子，此插件为 Vim 所支持的编程语言增添了注释及取消注释的命令。</p>
+<p>注释命令以 <code>\\{motion}</code> 触发，它会切换指定行的注释状态。它是一个操作符命令，因此可以把它和所有动作命令结合在一起。<code>\\ap</code> 将切换当前段落的注释状态，<code>\\G</code> 会把从当前行到文件结尾间的所有内容注释掉，而 <code>\\\</code> 则注释当前行。如果你对如何创建自定义操作符感到好奇，可以先阅读一下文档 <code>:h:map-operator</code>。`</p>
+<h5 id="_7">自定义动作命令与已有操作符协同工作</h5>
+<p>Kana Natsuno 的 <a href="https://github.com/kana/vim-textobj-entire">textobj-entire</a> 插件是一个很好的例子，它为 Vim 增加了两种新的文本对象 <code>ie</code> 和 <code>ae</code>，它们作用于整个文件。</p>
+<p>如果想用 <code>=</code> 命令自动缩进整个文件，我们可以执行 <code>gg=G</code> （就是说，先用 <code>gg</code> 跳到文件开头，然后用 <code>=G</code> 自动缩进从光标位置到文件结尾的所有内容）。但是如果我们安装了 textobj-entire 插件的话，简单地执行 <code>=ae</code> 就可以了。运行这条命令时光标在哪儿并不重要，因为它总是作用于整个文件。</p>
+<blockquote>
+<p><strong>NOTE</strong></p>
+<p>如果我们同时安装了 commentary 和 textobj-entire 插件，就可以把它们放在一起使用。例如，执行 <code>\\ae</code> 会切换整个文件的注释状态。</p>
+</blockquote>
+<p>如果你对如何创建自定义动作命令感到好奇，可以由阅读 <code>:h omap-info</code> 开始。</p>
+<h5 id="_8">结识操作符待决模式</h5>
+<p>Vim 还有另外一些很容易被忽视的模式，<strong>操作符待决模式（Operator-Pending mode）</strong>。</p>
+<p>在我们执行命令 <code>dw</code> 时，就会激活该模式。这一模式只在按 <code>d</code> 及 <code>w</code> 键之间的短暂时间间隔内存在，一眨眼工夫就不见了。</p>
+<p>如果我们把 Vim 想象成有限状态机，那么操作符待决模式就是一个只接受动作命令的状态。这个状态在我们调用操作符时被激活，然后什么也不做，直到我们提供了一个动作命令，完成整个操作。当操作符待决模式被激活时，我们可以像平常一样按 <code>&lt;Esc&gt;</code> 中止该操作，返回到普通模式。</p>
+<p>很多命令都由两个或更多的按键来调用，但在多数情况下，头一个按键只是第二个按键的前缀。这些命令不会激活操作符待决模式，相反，可以把它们当成 <strong>命名空间（namespace）</strong>，用来扩充可用命令的数目。只有操作符才会激活操作符待决模式。</p>
+<p>为什么要有一个完整的模式，专门用于操作符和动作命令之间的短暂瞬间，而命名空间命令则仅仅是普通模式的一个扩充？这是因为我们能够创建自定义映射项来激活或终结操作符待决模式。换句话说，<strong>它允许我们创建自定义的操作符及动作命令，从而让我们可以扩充 Vim 的词汇。</strong></p>
+    </div>
+    <div id="footer">
+      <span>
+        <p>Copyright © 2020 .
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+        <p>Site Generated 2020-05-02 15:21:30</p>
+      </span>
+    </div>
+
+    
+    
+  </body>
+</html>
