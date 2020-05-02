@@ -6,7 +6,7 @@
     <link rel="shortcut icon" href="/wiki/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/wiki/favicon.ico" type="image/x-icon">
     <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
-    <title>Vim - </title>
+    <title>Vim 模式 - </title>
     <meta name="keywords" content=""/>
     <meta name="description" content=""/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -16,20 +16,19 @@
     <div id="container">
       
 <div id="header">
-  <div class="post-nav"><a href="/wiki/">Home</a>&nbsp;&#187;&nbsp;<a href="/wiki/#linux">linux</a>&nbsp;&#187;&nbsp;Vim
+  <div class="post-nav"><a href="/wiki/">Home</a>&nbsp;&#187;&nbsp;<a href="/wiki/#读书笔记">读书笔记</a>&nbsp;&#187;&nbsp;Vim 模式
     <span class="updated">Page Updated&nbsp;
       2020-05-02 15:02
     </span></div>
 </div>
 <div class="clearfix"></div>
 
-<div class="page_title">Vim</div>
+<div class="page_title">Vim 模式</div>
 
-  <h1 id="_1">模式</h1>
-<h2 id="_2">普通模式</h2>
-<h3 id="7">技巧 7 停顿时请移开画笔</h3>
+  <h1 id="_1">普通模式</h1>
+<h2 id="7">技巧 7 停顿时请移开画笔</h2>
 <p>就像画家只花一小部分时间涂色一样，程序员也只花一小部分时间编写代码。绝大多数时间用来思考、阅读，以及在代码中穿梭浏览。而且，当确实需要做修改时，谁说一定要切换到插入模式才行？我们可以重新调整已有代码的格式，复制它们，移动其位置，或是删除它们。在普通模式中，我们有众多的工具可以利用。</p>
-<h3 id="8">技巧 8 把撤销单元切成块</h3>
+<h2 id="8">技巧 8 把撤销单元切成块</h2>
 <p><code>u</code> 键会触发撤销命令，它会撤销最新的修改。<strong>一次修改可以是改变文档内文本的任意操作</strong>，其中包括在普通模式、可视模式以及命令行模式中所触发的命令，而且一次修改也包括了在插入模式中输入（或删除）的文本，因此我们也可以说，<code>i{insert some text}&lt;Esc&gt;</code> 是一次修改。</p>
 <p>在 Vim 中，我们自己可以控制撤销命令的粒度。从进入插入模式开始，直到返回普通模式为止，在此期间输入或删除的任何内容都被当成一次修改。因此，只要我们控制好对 <code>&lt;Esc&gt;</code> 键的使用，就可使撤销命令作用于单词、句子或段落。</p>
 <p>当处于插入模式时，如果光标位于行尾的话，另起一行最快的方式是按 <code>&lt;CR&gt;</code>。不过有时我更喜欢按 <code>&lt;Esc&gt;o</code>，这是因为我有预感，也许在撤销时我想拥有更细的粒度。</p>
@@ -40,25 +39,25 @@
 <h3 id="9">技巧 9 构造可重复的修改</h3>
 <p>Vim对重复操作进行了优化，要利用这一点，我们必须考虑该如何构造修改。</p>
 <p>在 Vim 中，要完成一件事，总是有不止一种方式。在评估哪种方式最好时，最显而易见的指标是效率，即哪种手段需要的按键次数最少（又名 <a href="http://vimgolf.com">VimGolf</a>）。</p>
-<h4 id="_3">示例</h4>
+<h3 id="_2">示例</h3>
 <p>在下例中，假设光标位于行尾处的字符“h”上，而我们想要删除单词“nigh”。</p>
 <ol>
 <li>
 <p>反向删除</p>
-<p><img alt="17539bebe90671215f28693684ddfebc.png" src="evernotecid://41B82D8F-8785-4179-9349-346F92F0F7E1/appyinxiangcom/28253568/ENResource/p125" /></p>
+<p><img alt="17539bebe90671215f28693684ddfebc.png" src="/wiki/images/vim-practice/album_temp_1588336413.PNG" /></p>
 <p>按 <code>db</code> 命令删除从光标起始位置到单词开头的内容，但会原封未动地留下最后一个字符 “h”，再按一下 <code>x</code> 键就可以删除这个捣乱的字符。这样，整个操作的 VimGolf 得分是 <em>3</em> 分。</p>
 <p>如果我们跟着执行一次 <code>.</code> 命令，它会重复删除一个字符（<code>.</code> == <code>x</code>）。我不觉得这有什么价值。</p>
 </li>
 <li>
 <p>正向删除</p>
-<p><img alt="752772ee75953c094fcb8b90961bb278.png" src="evernotecid://41B82D8F-8785-4179-9349-346F92F0F7E1/appyinxiangcom/28253568/ENResource/p126" /></p>
+<p><img alt="752772ee75953c094fcb8b90961bb278.png" src="/wiki/images/vim-practice/album_temp_1588336417.PNG" /></p>
 <p>我们先用 <code>b</code> 命令把光标移到单词的开头，移动好后，就可以用一个 <code>dw</code> 命令删掉整个单词。这一次的 VimGolf 得分也是 <em>3</em> 分。</p>
 <p>此时用 <code>.</code> 命令会重复 <code>dw</code>，删除从光标位置到下个单词开头的内容。不过因为我们刚好已经在行尾了，并没有“下一个单词”，所以在这个场景里 <code>.</code> 命令没什么用。不过，至少它代表了一个更长点的操作（<code>.</code> == <code>dw</code>）。</p>
 </li>
 <li>
 <p>删除整个单词</p>
 <p>我们也可以使用更为精准的 <code>aw</code> <strong>文本对象（text object）</strong>，而不是用动作命令。</p>
-<p><img alt="c77ca689bd5ebf02bcdb647f5daa1375.png" src="evernotecid://41B82D8F-8785-4179-9349-346F92F0F7E1/appyinxiangcom/28253568/ENResource/p127" /></p>
+<p><img alt="c77ca689bd5ebf02bcdb647f5daa1375.png" src="/wiki/images/vim-practice/album_temp_1588336423.PNG" /></p>
 <p>你可以把 <code>daw</code> 命令解读为“delete a word”，这样比较容易记忆。</p>
 <p>如果此时我们使用 <code>.</code> 命令，它会重复上次删除单词的命令。这一次，<code>.</code> 命令会做真正有用的事情（<code>.</code> == <code>daw</code>）。</p>
 </li>
@@ -68,14 +67,14 @@
 <p>很多普通模式命令都可以带一个次数前缀，这样 Vim 就会尝试把该命令执行指定的次数，而不是只执行一次。</p>
 <p><code>&lt;C-a&gt;</code> 和 <code>&lt;C-x&gt;</code> 命令分别对数字执行加和减操作。在不带次数执行时，它们会逐个加减，但如果带一个次数前缀，那么就可以用它们加减任意整数。例如，如果我们把光标移到字符 5 上，执行 <code>10&lt;C-a&gt;</code> 就会把它变成 15。</p>
 <p>文档里说，<code>&lt;C-a&gt;</code> 命令会“把当前光标之上或之后的数值加上[count]”。因此，如果光标不在数字上，那么 <code>&lt;C-a&gt;</code> 命令将在当前行正向查找一个数字，如果找到了，它就径直跳到那里。</p>
-<h4 id="_4">示例</h4>
+<h4 id="_3">示例</h4>
 <p>我们要对下面的 CSS 代码做一些改动：复制最后一行，用 “news” 替换单词 “blog”，以及把 “0px” 改为 “-180px”。</p>
 <div class="hlcode"><pre><span class="nc">.blog</span><span class="o">,</span> <span class="nc">.news</span> <span class="p">{</span> <span class="k">background-image</span><span class="o">:</span> <span class="sx">url(/sprite.png)</span><span class="p">;</span> <span class="p">}</span>
 <span class="nc">.blog</span> <span class="p">{</span> <span class="k">background-position</span><span class="o">:</span> <span class="m">0px</span> <span class="m">0px</span> <span class="p">}</span>
 </pre></div>
 
 
-<p><img alt="53a76a1144db38619075adc74acb8672.png" src="evernotecid://41B82D8F-8785-4179-9349-346F92F0F7E1/appyinxiangcom/28253568/ENResource/p128" /></p>
+<p><img alt="53a76a1144db38619075adc74acb8672.png" src="/wiki/images/vim-practice/album_temp_1588342315.PNG" /></p>
 <blockquote>
 <p><strong>NOTE 数字的格式</strong></p>
 <p>Vim 把以 <code>0</code> 开头的数字解释为八进制值，而不是十进制。<br />
@@ -96,7 +95,7 @@
 <blockquote>
 <p><strong>NOTE 只在必要时使用次数</strong></p>
 <p>假设我们想把文字 “I have a couple of questions” 改为 “I have some more questions”，可以用下面的方式做：</p>
-<p><img alt="abdd41f7efbee56fb5086d5075aa63c9.png" src="evernotecid://41B82D8F-8785-4179-9349-346F92F0F7E1/appyinxiangcom/28253568/ENResource/p129" /></p>
+<p><img alt="abdd41f7efbee56fb5086d5075aa63c9.png" src="/wiki/images/vim-practice/album_temp_1588343073.PNG" /></p>
 <p>在此场景中，使用 <code>.</code> 命令的意义不大，我们可以删除一个单词，然后再用 <code>.</code> 命令删除另一个，但随后我们还得切换到插入模式。对我来说这么做很不顺手，我反而更愿意用次数。</p>
 <p>使用次数的另一个好处是：它<strong>保留了一个干净、连贯的撤销历史记录</strong>。完成这次修改后，我们按一下 <code>u</code> 键就可以撤销整个修改。</p>
 </blockquote>
@@ -160,12 +159,12 @@
 </table>
 <p>操作符与动作命令的结合形成了一种语法。这种语法的第一条规则很简单，即一个操作由一个操作符，后面跟一个动作命令组成。</p>
 <p>Vim 的语法只有一条额外规则，即当一个操作符命令被连续调用两次时，它会作用于当前行。所以 <code>dd</code> 删除当前行，而 <code>&gt;&gt;</code> 缩进当前行。<code>gU</code> 命令是一种特殊情况，我们既可以用 <code>gUgU</code> ，也可以用简化版的 <code>gUU</code> 来使它作用于当前行。</p>
-<h4 id="_5">扩展命令组合的威力</h4>
+<h4 id="_4">扩展命令组合的威力</h4>
 <p>使用 Vim 缺省的操作符和动作命令，我们能够执行的操作的数目是巨大的，然而，我们还可以通过自定义动作命令及操作符来进一步扩充其数目。</p>
-<h5 id="_6">自定义操作符与已有动作命令协同工作</h5>
+<h5 id="_5">自定义操作符与已有动作命令协同工作</h5>
 <p>随同 Vim 发布的标准操作符集合相对比较少，但我们可以定义新的操作符。TimPope 的 <a href="https:/github.com/tpope/vim-commentary">commentary.vim</a> 插件提供了一个很好的例子，此插件为 Vim 所支持的编程语言增添了注释及取消注释的命令。</p>
 <p>注释命令以 <code>\\{motion}</code> 触发，它会切换指定行的注释状态。它是一个操作符命令，因此可以把它和所有动作命令结合在一起。<code>\\ap</code> 将切换当前段落的注释状态，<code>\\G</code> 会把从当前行到文件结尾间的所有内容注释掉，而 <code>\\\</code> 则注释当前行。如果你对如何创建自定义操作符感到好奇，可以先阅读一下文档 <code>:h:map-operator</code>。`</p>
-<h5 id="_7">自定义动作命令与已有操作符协同工作</h5>
+<h5 id="_6">自定义动作命令与已有操作符协同工作</h5>
 <p>Kana Natsuno 的 <a href="https://github.com/kana/vim-textobj-entire">textobj-entire</a> 插件是一个很好的例子，它为 Vim 增加了两种新的文本对象 <code>ie</code> 和 <code>ae</code>，它们作用于整个文件。</p>
 <p>如果想用 <code>=</code> 命令自动缩进整个文件，我们可以执行 <code>gg=G</code> （就是说，先用 <code>gg</code> 跳到文件开头，然后用 <code>=G</code> 自动缩进从光标位置到文件结尾的所有内容）。但是如果我们安装了 textobj-entire 插件的话，简单地执行 <code>=ae</code> 就可以了。运行这条命令时光标在哪儿并不重要，因为它总是作用于整个文件。</p>
 <blockquote>
@@ -173,7 +172,7 @@
 <p>如果我们同时安装了 commentary 和 textobj-entire 插件，就可以把它们放在一起使用。例如，执行 <code>\\ae</code> 会切换整个文件的注释状态。</p>
 </blockquote>
 <p>如果你对如何创建自定义动作命令感到好奇，可以由阅读 <code>:h omap-info</code> 开始。</p>
-<h5 id="_8">结识操作符待决模式</h5>
+<h5 id="_7">结识操作符待决模式</h5>
 <p>Vim 还有另外一些很容易被忽视的模式，<strong>操作符待决模式（Operator-Pending mode）</strong>。</p>
 <p>在我们执行命令 <code>dw</code> 时，就会激活该模式。这一模式只在按 <code>d</code> 及 <code>w</code> 键之间的短暂时间间隔内存在，一眨眼工夫就不见了。</p>
 <p>如果我们把 Vim 想象成有限状态机，那么操作符待决模式就是一个只接受动作命令的状态。这个状态在我们调用操作符时被激活，然后什么也不做，直到我们提供了一个动作命令，完成整个操作。当操作符待决模式被激活时，我们可以像平常一样按 <code>&lt;Esc&gt;</code> 中止该操作，返回到普通模式。</p>
@@ -184,7 +183,7 @@
       <span>
         <p>Copyright © 2020 .
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2020-05-02 15:21:30</p>
+        <p>Site Generated 2020-05-02 15:30:54</p>
       </span>
     </div>
 
