@@ -1,2 +1,4 @@
 *.pyc
 output
+wiki
+.DS_Store
