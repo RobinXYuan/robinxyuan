@@ -1,0 +1,568 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="Stylesheet" type="text/css" href="/wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/wiki/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+    <title>Docker 的优势及基本使用 - </title>
+    <meta name="keywords" content=""/>
+    <meta name="description" content=""/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+
+  <body>
+    <div id="container">
+      
+<div id="header">
+  <div class="post-nav"><a href="/wiki/">Home</a>&nbsp;&#187;&nbsp;<a href="/wiki/#读书笔记">读书笔记</a>&nbsp;&#187;&nbsp;Docker 的优势及基本使用
+    <span class="updated">Page Updated&nbsp;
+      2020-05-02 10:28
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">Docker 的优势及基本使用</div>
+
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">从容器到容器云</a><ul>
+<li><a href="#_2">云计算平台</a><ul>
+<li><a href="#_3">经典云计算架构</a></li>
+</ul>
+</li>
+<li><a href="#_4">容器，新的革命</a><ul>
+<li><a href="#docker">Docker 是什么？</a></li>
+<li><a href="#_5">容器技术生态系统</a></li>
+<li><a href="#_6">容器的优势</a></li>
+</ul>
+</li>
+<li><a href="#_7">进化：从容器到容器云</a><ul>
+<li><a href="#_8">什么是容器云？</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#docker_1">Docker 基础</a><ul>
+<li><a href="#docker_2">Docker 操作参数解读</a><ul>
+<li><a href="#_9">获取帮助信息</a></li>
+<li><a href="#docker_3">Docker 子命令</a><ul>
+<li><a href="#_10">子命令的分类与关系</a></li>
+<li><a href="#docker_4">Docker 环境信息</a></li>
+<li><a href="#_11">容器生命周期管理</a></li>
+<li><a href="#docker-registry">Docker registry</a></li>
+<li><a href="#_12">镜像管理</a></li>
+<li><a href="#_13">容器运维操作</a></li>
+<li><a href="#_14">其它子命令</a></li>
+</ul>
+</li>
+<li><a href="#docker_5">搭建第一个 Docker 应用栈</a><ul>
+<li><a href="#hello-world">第一个 Hello World</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_15">容器启动命令</a></li>
+<li><a href="#etchosts">容器内查看 /etc/hosts 文件</a></li>
+<li><a href="#redis">启动 Redis 容器</a></li>
+<li><a href="#django">启动 Django 容器，即应用</a></li>
+<li><a href="#haproxy">启动 HAProxy 容器</a></li>
+<li><a href="#_16">在容器内</a></li>
+</ul>
+</div>
+<h1 id="_1">从容器到容器云</h1>
+<h2 id="_2">云计算平台</h2>
+<h3 id="_3">经典云计算架构</h3>
+<ul>
+<li>
+<p>IaaS（Infrastructure as a Service，基础设施即服务）</p>
+<p>为基础设施运维人员服务，提供计算、存储、网络及其他基础资源，云平台使用者可以在上面部署和运行包括操作系统和应用程序在内的任意软件，无需再为基础设施的管理而分心。</p>
+</li>
+<li>
+<p>PaaS（Platformas a Service，平台即服务）</p>
+<p>为应用开发人员服务，提供支撑应用运行所需的软件运行时环境、相关工具与服务，如数据库服务、日志服务、监控服务等，让应用开发者可以专注于核心业务的开发。</p>
+</li>
+<li>
+<p>SaaS（Software as a Service，软件即服务）</p>
+<p>为一般用户服务，提供了一套完整可用的软件系统，让一般用户无需关注技术细节，只需通过浏览器、应用客户端等方式就能使用部署在云上的应用服务。</p>
+</li>
+</ul>
+<h2 id="_4">容器，新的革命</h2>
+<h3 id="docker">Docker 是什么？</h3>
+<blockquote>
+<p>Docker 是以 Docker 容器为资源分割和调度的基本单位，封装整个软件运行时环境，为开发者和系统管理员设计的，用于构建、发布和运行分布式应用的平台。它是一个跨平台、可移植并且简单易用的容器解决方案。</p>
+</blockquote>
+<h3 id="_5">容器技术生态系统</h3>
+<p><img alt="容器技术生态系统" src="/wiki/images/reading-notes/docker容器与容器云/容器技术生态系统.png" /></p>
+<h3 id="_6">容器的优势</h3>
+<ul>
+<li>
+<p><strong>持续部署与测试</strong></p>
+<p>容器消除了线上线下的环境差异，保证了应用生命周期的环境一致性和标准化。开发人员使用镜像实现标准开发环境的构建，开发完成后通过封装着完整环境和应用的镜像进行迁移，由此，测试和运维人员可以直接部署软件镜像来进行测试和发布，大大简化了持续集成、测试和发布的过程。</p>
+</li>
+<li>
+<p><strong>跨云平台支持</strong></p>
+<p>容器带来的最大好处之一就是其适配性，越来越多的云平台都支持容器，用户再也无需担心受到云平台的捆绑，同时也让应用多平台混合部署成为可能。</p>
+</li>
+<li>
+<p><strong>环境标准化和版本控制</strong></p>
+<p>基于容器提供的环境一致性和标准化，可以使用 Git 等工具对容器镜像进行版本控制，相比基于代码的版本控制来说，你还能够对整个应用运行环境实现版本控制，一旦出现故障可以快速回滚。相比以前的虚拟机镜像，容器压缩和备份速度更快，镜像启动也像启动一个普通进程一样快速。</p>
+</li>
+<li>
+<p><strong>高资源利用率与隔离</strong></p>
+<p>容器没有管理程序的额外开销，与底层共享操作系统，性能更加优良，系统负载更低，在同等条件下可以运行更多的应用实例，可以更充分地利用系统资源。同时，容器拥有不错的资源隔离与限制能力，可以精确地对应用分配 CPU、内存等资源，保证了应用间不会相互影响。</p>
+</li>
+<li>
+<p><strong>容器跨平台性与镜像</strong></p>
+<p>容器在原有 Linux 容器的基础上进行大胆革新，为容器设定了一整套标准化的配置方法，将应用及其依赖的运行环境打包成镜像，真正实现了“构建一次，到处运行”的理念，大大提高了容器的跨平台性。</p>
+</li>
+<li>
+<p><strong>易于理解且易用</strong></p>
+<p>Docker 的英文原意是处理集装箱的码头工人，标志是鲸鱼运送一大堆集装箱，集装箱就是容器，生动好记，易于理解。一个开发者可以在 15 分钟之内入门 Docker 并进行安装和部署。</p>
+</li>
+<li>
+<p><strong>应用镜像仓库</strong></p>
+<p>Docker 官方构建了一个镜像仓库，组织和管理形式类似于 GitHub，其上已累积了成千上万的镜像。因为 Docker 的跨平台适配性，相当于为用户提供了一个非常有用的应用商店，所有人都可以自由地下载微服务组件，这为开发者提供了巨大便利。</p>
+</li>
+</ul>
+<h2 id="_7">进化：从容器到容器云</h2>
+<h3 id="_8">什么是容器云？</h3>
+<blockquote>
+<p>容器云以容器为资源分割和调度的基本单位，封装整个软件运行时环境，为开发者和系统管理员提供用于构建、发布和运行分布式应用的平台。</p>
+</blockquote>
+<p>当容器云专注于资源共享与隔离、容器编排与部署时，它更接近传统的 IaaS；当容器云渗透到应用支撑与运行时环境时，它更接近传统的 PaaS。</p>
+<h1 id="docker_1">Docker 基础</h1>
+<h2 id="docker_2">Docker 操作参数解读</h2>
+<p>用户在使用 Docker 时，需要使用 Docker 命令行工具 <code>docker</code> 与 Docker daemon 建立通信。Docker daemon 是 Docker 守护进程，负责接收并分发执行 Docker 命令。</p>
+<p><code>docker</code> 命令的执行一般都需要获取 root 权限，因为 Docker 的命令行工具 <code>docker</code> 与 Docker daemon 是同一个二进制文件，而 Docker daemon 负责接收并执行来自 <code>docker</code> 的命令，它的运行需要 root 权限。</p>
+<p>从 Docker 0.5.2 版本开始，Docker daemon 默认绑定一个 Unix Socket 来代替原有的 TCP 端口，该 Unix Socket 默认是属于 root 用户的。</p>
+<h3 id="_9">获取帮助信息</h3>
+<p>对于每一个特定的子命令，用户可以使用 <code>docker &lt;COMMAND&gt; --help</code> 命令来查看该子命令的详细信息，包括子命令的使用方法及可用的操作参数。</p>
+<p>用于管理容器的 Docker daemon 也有详细的参数配置，使用 <code>docker</code> 命令或 <code>docker help</code> 命令来查看。</p>
+<h3 id="docker_3">Docker 子命令</h3>
+<h4 id="_10">子命令的分类与关系</h4>
+<table>
+<thead>
+<tr>
+<th>子命令分类</th>
+<th>子命令</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Docker 环境信息</td>
+<td><code>info</code>，<code>version</code></td>
+</tr>
+<tr>
+<td>容器生命周期管理</td>
+<td><code>create</code>，<code>exec</code>，<code>kill</code>，<code>pause</code>，<code>restart</code>，<code>rm</code>，<code>run</code>，<code>start</code>，<code>stop</code>，<code>unpause</code></td>
+</tr>
+<tr>
+<td>镜像仓库命令</td>
+<td><code>login</code>，<code>logout</code>，<code>pull</code>，<code>push</code>，<code>search</code></td>
+</tr>
+<tr>
+<td>镜像管理</td>
+<td><code>build</code>，<code>images</code>，<code>import</code>，<code>load</code>，<code>rmi</code>，<code>save</code>，<code>tag</code>，<code>commit</code></td>
+</tr>
+<tr>
+<td>容器运维操作</td>
+<td><code>attach</code>，<code>export</code>，<code>inspect</code>，<code>port</code>，<code>ps</code>，<code>rename</code>，<code>stats</code>，<code>top</code>，<code>wait</code>，<code>cp</code>，<code>diff</code>，<code>update</code></td>
+</tr>
+<tr>
+<td>容器资源管理</td>
+<td><code>volume</code>，<code>network</code></td>
+</tr>
+<tr>
+<td>系统日志信息</td>
+<td><code>events</code>，<code>history</code>，<code>logs</code></td>
+</tr>
+</tbody>
+</table>
+<p><img alt="Docker 命令结构图" src="/wiki/images/reading-notes/docker容器与容器云/album_temp_1588687831.PNG" /></p>
+<h4 id="docker_4">Docker 环境信息</h4>
+<ol>
+<li>
+<p><code>docker info</code></p>
+<p>用于检查 Docker 是否正确安装。如果 Docker 正确安装，该命令会输出 Docker 的配置信息。</p>
+<p>一般结合 <code>docker version</code> 命令使用，两者结合使用能够提取到足够详细的 Docker 环境信息。</p>
+</li>
+</ol>
+<h4 id="_11">容器生命周期管理</h4>
+<ol>
+<li>
+<p><code>docker run</code></p>
+<p><code>docker
+docker run [OPTIONS] IMAGE [COMMAND] [ARG...]</code></p>
+<p>用来基于特定的镜像创建一个容器，并依据选项来控制该容器。</p>
+<p><code>docker run</code> 命令启动的容器会随机分配一个容器 ID（CONTAINER ID），用以标识该容器。</p>
+<p>常用选项有：</p>
+<ul>
+<li><code>-i</code>：使用交互模式，始终保持输入流开放</li>
+<li><code>-t</code>：分配一个伪终端，一般两个参数结合时使用 <code>-it</code>，即可在容器中利用打开的伪终端进行交互操作</li>
+<li><code>--name</code>：可以指定 <code>docker run</code> 命令启动的容器的名字，若无此选项，Docker 将为容器随机分配一个名字</li>
+<li><code>-c</code>：用于给运行在容器中的所有进程分配 CPU 的 shares 值，这是一个相对权重，实际的处理速度还与宿主机的 CPU 相关</li>
+<li><code>-m</code>：用于限制为容器中所有进程分配的内存总量，以 <code>B</code>、<code>K</code>、<code>M</code>、<code>G</code> 为单位</li>
+<li>
+<p><code>-v</code>：用于挂载一个 volume，可以用多个 <code>-v</code> 参数同时挂载多个volume<br />
+    volume 的格式为 <code>[host-dir]:[container-dir]:[rw|ro]</code></p>
+</li>
+<li>
+<p><code>-p</code>：用于将容器的端口暴露给宿主机的端口，其常用格式为 <code>&lt;host_port&gt;:&lt;container_port&gt;</code> 。通过端口的暴露，可以让外部主机通过宿主机暴露的端口来访问容器内的应用</p>
+</li>
+</ul>
+</li>
+<li>
+<p><code>docker start|stop|restart</code></p>
+<p>对于已经存在的容器，可以通过 <code>docker start|stop|restart</code> 命令来启动、停止和重启。</p>
+<p><code>docker start|stop|restart</code> 命令一般利用容器 ID 标识确定具体容器，在一些情况下，也使用容器名来确定容器。</p>
+<p><code>docker start</code> 命令使用 <code>-i</code> 选项来开启交互模式，始终保持输入流开放。使用 <code>-a</code> 选项来附加标准输入、输出或错误输出。</p>
+<p><code>docker stop</code> 和 <code>docker restart</code> 命令使用 <code>-t</code> 选项来设定容器停止前的等待时间。</p>
+</li>
+</ol>
+<h4 id="docker-registry">Docker registry</h4>
+<p><em>Docker registry</em> 是存储容器镜像的仓库，用户可以通过 <em>Docker client</em> 与 <em>Docker registry</em> 进行通信，以此来完成镜像的搜索、下载和上传等相关操作。</p>
+<p><em>Docker Hub</em> 是由 Docker 公司在互联网上提供的一个镜像仓库，提供镜像的公有与私有存储服务，它是用户最主要的镜像来源。除了 <em>Docker Hub</em> 外，用户还可以自行搭建私有服务器来实现镜像仓库的功能。</p>
+<ol>
+<li>
+<p><code>docker pull</code></p>
+<p><code>docker
+docker pull [OPTIONS] NAME[:TAG @DIGEST]</code></p>
+<p>主要用于从 Docker registry 中拉取 image 或 repository。</p>
+<p>可以从官方的 <em>Docker Hub</em> 中的官方镜像库、其他公共库、私人库中获取镜像资源，同时，还可以从私有服务器中获取镜像资源。只需在具体的镜像名前添加用户名、特定库名或者服务器地址即可获取镜像。</p>
+</li>
+<li>
+<p><code>docker push</code></p>
+<p><code>docker
+docker push [OPTIONS] NAME[:TAG]</code></p>
+<p>将本地的 image 或 repository 推送到 <em>Docker Hub</em> 的公共或私有镜像库，以及私有服务器。</p>
+</li>
+</ol>
+<h4 id="_12">镜像管理</h4>
+<ol>
+<li>
+<p><code>docker images</code></p>
+<p><code>docker
+docker images [OPTIONS] [REPOSITORY[:TAG]]</code></p>
+<p>列出主机上的镜像，默认只列出最顶层的镜像，可以使用 <code>-a</code> 选项显示所有镜像。</p>
+</li>
+<li>
+<p><code>docker rmi</code> 和 <code>docker rm</code></p>
+<p><code>docker
+docker rm [OPTIONS] CONTAINER [CONTAINER...]
+docker rmi [OPTIONS] IMAGE [IMAGE...]</code></p>
+<p><code>docker rmi</code> 命令用于删除镜像，<code>docker rm</code> 命令用于删除容器。它们可同时删除多个镜像或容器，也可按条件来删除。</p>
+<blockquote>
+<p><strong>NOTE</strong></p>
+<p>使用 <code>rmi</code> 命令删除镜像时，如果已有基于该镜像启动的容器存在，则无法直接删除，需要首先删除容器。</p>
+</blockquote>
+<p>这两个子命令都提供 <code>-f</code> 选项，可强制删除存在容器的镜像或启动中的容器。</p>
+</li>
+</ol>
+<h4 id="_13">容器运维操作</h4>
+<ol>
+<li>
+<p><code>docker attach</code></p>
+<p><code>docker
+docker attach [OPTIONS] CONTAINER</code></p>
+<p>可以连接到正在运行的容器，观察该容器的运行情况，或与容器的主进程进行交互。</p>
+</li>
+<li>
+<p><code>docker inspect</code></p>
+<p><code>docker
+docker inspect [OPTIONS] CONTAINER|IMAGE [CONTAINER|IMAGE...]</code></p>
+<p>可以查看镜像和容器的详细信息，默认会列出全部信息，可以通过 <code>——format</code> 参数来指定输出的模板格式，以便输出特定信息。</p>
+</li>
+<li>
+<p><code>docker ps</code></p>
+<p><code>docker
+docker ps [OPTIONS]</code></p>
+<p>可以查看容器的相关信息，默认只显示正在运行的容器的信息。可以查看到的信息包括 <em>CONTAINER ID</em>、<em>NAMES</em>、<em>IMAGE</em>、<em>STATUS</em>、容器启动后执行的 <em>COMMAND</em>、创建时间 <em>CREATED</em> 和绑定开启的端口 <em>PORTS</em>。</p>
+<p>常用选项：</p>
+<ul>
+<li><code>-a</code>：可以查看所有容器，包括停止的容器；</li>
+<li><code>-l</code>：只查看最新创建的容器，包括不在运行中的容器。</li>
+</ul>
+</li>
+</ol>
+<h4 id="_14">其它子命令</h4>
+<ol>
+<li>
+<p><code>docker commit</code></p>
+<p><code>docker
+docker commit [OPTIONS] CONTAINER [REPOSITORY[:TAG]]</code></p>
+<p>可以将一个容器固化为一个新的镜像。当需要制作特定的镜像时，会进行修改容器的配置，如在容器中安装特定工具等，通过 <code>commit</code> 命令可以将这些修改保存起来，使其不会因为容器的停止而丢失。</p>
+<p>提交保存时，只能选用 <strong>正在运行的容器</strong>（即可以通过 <code>docker ps</code> 查看到的容器）来制作新的镜像。在制作特定镜像时，直接使用 <code>commit</code> 命令只是一个临时性的辅助命令，不推荐使用。官方建议通过 <code>docker build</code> 命令结合 Dockerfile 创建和管理镜像。</p>
+</li>
+<li>
+<p><code>docker events</code>、<code>docker history</code> 和 <code>docker logs</code></p>
+<p><code>docker
+docker events [OPTIONS]
+docker history [OPTIONS] IMAGE
+docker logs [OPTIONS] CONTAINER</code></p>
+<p>用于查看 Docker 的系统日志信息。</p>
+<ul>
+<li><code>events</code>：会打印出实时的系统事件；</li>
+<li><code>history</code>：会打印出指定镜像的历史版本信息，即构建该镜像的每一层镜像的命令记录；</li>
+<li><code>logs</code>：会打印出容器中进程的运行日志。</li>
+</ul>
+</li>
+</ol>
+<h3 id="docker_5">搭建第一个 Docker 应用栈</h3>
+<h4 id="hello-world">第一个 Hello World</h4>
+<p>在 Docker 中，镜像是容器的基础，可以通过镜像来运行容器。</p>
+<p>我们将搭建一个包含 6 个节点的 Docker 应用栈，其中包括一个代理节点、两个 Web 的应用节点、一个主数据库节点及两个从数据库节点。</p>
+<ul>
+<li>HAProxy：负载均衡代理节点；</li>
+<li>Redis：非关系型的数据库，它由一个主数据库节点和两个从数据库节点组成；</li>
+<li>App：应用，这里基于 Django 架构设计一个访问数据库的基础 Web 应用。</li>
+</ul>
+<p><img alt="应用栈结构" src="/wiki/images/reading-notes/docker容器与容器云/album_temp_1589118322.PNG" /></p>
+<ol>
+<li>
+<p>获取应用栈各节点所需镜像</p>
+<p>从 Docker Hub 获取 HAProxy、Redis 及 Django 的镜像。</p>
+<p><code>shell
+sudo docker pull ubuntu
+sudo docker pull django
+sudo docker pull haproxy
+sudo docker pull redis
+sudo docker images</code></p>
+</li>
+<li>
+<p>应用栈容器节点互联</p>
+<p>鉴于在同一主机下搭建容器应用栈的环境，只需要完成容器互联来实现容器间的通信即可，这里采用 <code>docker run</code> 命令的 <code>--link</code> 选项建立容器间的互联关系。</p>
+<blockquote>
+<p><strong>NOTE</strong></p>
+<p>通过 <code>--link</code> 选项能够进行容器间安全的交互通信，使用格式为 <code>name:alias</code>，可在一个 <code>docker run</code> 命令中重复使用该参数。</p>
+<p><code>shell
+sudo docker run --link redis:redis --name console ubuntu bash</code></p>
+<p>通过 <code>--link</code> 选项来建立容器间的连接，不但可以避免容器的 IP 和端口暴露到外网所导致的安全问题，还可以防止容器在重启后 IP 地址变化导致的访问失效，它的原理类似于 DNS 服务器的域名和地址映射。当容器的 IP 地址发生变化时，Docker 将自动维护映射关系中的 IP 地址。</p>
+<p>```shell</p>
+<h1 id="_15">容器启动命令</h1>
+<p>sudo docker run -it --name redis-slave1 --link redis-master:redis:master redis /bin/bash</p>
+<h1 id="etchosts">容器内查看 /etc/hosts 文件</h1>
+<p>cat /etc/hosts<br />
+172.17.0.6  08df6a2cb468<br />
+127.0.0.1   localhost<br />
+...<br />
+172.17.0.5   master<br />
+```</p>
+</blockquote>
+<p>可以将 <code>--link</code> 设置理解为一条IP地址的单向记录信息，因此在搭建容器应用栈时，需要注意各个容器节点的启动顺序，以及对应的 <code>--link</code> 参数设置。</p>
+<p>应用栈各节点的连接信息如下：</p>
+<ul>
+<li>启动 redis-master 容器节点；</li>
+<li>两个 redis-slave 容器节点启动时要连接到 redis-master 上</li>
+<li>两个 APP 容器节点启动时要连接到 redis-master 上；</li>
+<li>HAProxy 容器节点启动时要连接到两个 APP 节点上。</li>
+</ul>
+<p>综上所述，容器的启动顺序应为：</p>
+<blockquote>
+<p>redis-master → redis-slave → APP → HAProxy</p>
+</blockquote>
+<p>为了能够从外网访问应用栈，并通过 HAProxy 节点来访问应用栈中的 APP，在启动 HAProxy 容器节点时，需要利用 <code>-p</code> 参数暴露端口给主机，即可通过主机 IP 加暴露的端口从外网访问搭建的应用栈。</p>
+</li>
+<li>
+<p>应用栈容器节点启动</p>
+<p>```shell</p>
+<h1 id="redis">启动 Redis 容器</h1>
+<p>sudo docker run -it --name redis-master redis /bin/bash<br />
+sudo docker run -it --name redis-slave1 --link redis-master:master redis /bin/bash<br />
+sudo docker run -it --name redis-slave2 --link redis-master:master redis /bin/bash</p>
+<h1 id="django">启动 Django 容器，即应用</h1>
+<p>sudo docker run -it --name APP1 --link redis-master:dh -v ~/Projects/Django/App1:/usr/src/app django /bin/bash<br />
+sudo docker run -it --name APP2 --link redis-master:dh -v ~/Projects/Django/App2:/usr/src/app django /bin/bash</p>
+<h1 id="haproxy">启动 HAProxy 容器</h1>
+<p>sudo docker run -it --name HAProxy --link APP1:APP1 --link APP2:APP2 -p 6301:6301 -v ~/Projects/HAProxy:/tmp haproxy /bin/bash<br />
+```</p>
+<p>启动的容器信息可以通过 <code>docker ps</code> 命令查看。</p>
+</li>
+<li>
+<p>应用栈容器节点的配置</p>
+<ul>
+<li>
+<p>Redis Master 主数据库容器节点的配置</p>
+<p>对于需要在容器中创建文件的情况，由于容器的轻量化设计，其中缺乏相应的文本编辑命令工具，这时可以利用volume来实现文件的创建。在容器启动时，利用 <code>-v</code> 参数挂载 volume，在主机和容器间共享数据，这样就可以直接在主机上创建和编辑相关文件，省去了在容器中安装各类编辑工具的麻烦。</p>
+<p>我们需要通过 <code>docker inspect</code> 命令来查看所挂载 volume 的情况。</p>
+<p><code>shell
+sudo docker inspect --format "{{ .Volumes }}" bc8e</code></p>
+<p>然后进入对应的目录下编辑 <code>redis.conf</code> 文件，对于 Redis 的主数据库，需要修改模板文件中的如下几个参数：</p>
+<p><code>text
+daemonize yes
+pidfile /var/run/redis.pid</code></p>
+<p>在主机创建好启动配置文件后，切换到容器中的 volume 目录，并复制启动配置文件到 Redis 的执行工作目录，然后启动 Redis 服务器：</p>
+<p><code>shell
+cd /data
+cp redis.conf /usr/local/bin
+cd /usr/local/bin
+redis-server redis.conf</code></p>
+</li>
+<li>
+<p>Redis Slave 从数据库容器节点的配置</p>
+<p>在启动 Redis Slave 容器节点后，需要首先查看 volume 信息。然后进入对应的目录下编辑 <code>redis.conf</code> 文件，对于 Redis 的从数据库，需要修改模板文件中的如下几个参数：</p>
+<p><code>text
+daemonize yes
+pidfile /var/run/redis.pid
+slaveof master 6379</code></p>
+<p><code>slaveof</code> 参数的使用格式为 <code>slaveof &lt;masterip&gt; &lt;masterport&gt;</code>，可以看到对于<code>masterip</code> 使用了 <code>--link</code> 参数设置的连接名来代替实际 IP 地址。通过连接名互连通信时，容器会自动读取它的 host 信息，将连接名转换为实际 IP 地址。在主机创建好启动配置文件后，切换到容器中的 volume 目录，并复制启动配置文件到 Redis 的执行工作目录，然后启动 Redis 服务器：</p>
+<p><code>shell
+cd /data
+cp redis.conf /usr/local/bin
+cd /usr/local/bin
+redis-server redis.conf</code></p>
+</li>
+<li>
+<p>Redis 数据库容器节点的测试</p>
+<p>首先，在 Redis Master 容器内，启动 Redis 的客户端程序，并存储一个数据：</p>
+<p><code>shell
+redis-cli
+127.0.0.1:6379&gt; set master bc8e
+OK
+127.0.0.1:6379&gt; get master
+"bc8e"</code></p>
+<p>随后，在两个 Redis Slave 容器内，分别启动 Redis 的客户端程序，查询先前在 Master 数据库中存储的数据：</p>
+<p><code>shell
+redis-cli
+127.0.0.1:6379&gt; get master
+"bc8e"</code></p>
+<p>由此可以看到，Master 数据库中的数据已经自动同步到了 Slave 数据库中。至此，应用栈的数据库部分已搭建完成，并通过测试。</p>
+</li>
+<li>
+<p>APP 容器节点（Django）的配置</p>
+<p>为了访问数据库，需要在容器中安装 Python 语言的 Redis 支持包：</p>
+<p><code>shell
+pip install redis</code></p>
+<p>安装完成后，进行简单的测试来验证支持包是否安装成功：</p>
+<p><code>python
+import redis
+print(redis.__file__)</code></p>
+<p>如果没有报错，说明已经可以使用 Python 语言来调用 Redis 数据库。</p>
+<p>在容器的 volume 目录 <em>/usr/src/app/</em> 下，开始创建 APP，执行过程如下：</p>
+<p>```shell</p>
+<h1 id="_16">在容器内</h1>
+<p>cd /usr/src/app<br />
+mkdir dockerweb<br />
+cd dockerweb<br />
+django-admin startproject redisweb<br />
+cd redisweb<br />
+python manage.py startapp helloworld<br />
+```</p>
+<p>在容器内创建 APP 后，切换到主机的 volume 目录 <code>～/Projects/Django/App1</code>，进行相应的编辑来配置 APP。</p>
+<p>修改 helloworld 应用的视图文件 <em>views.py</em>。</p>
+<p>```python<br />
+from django.shortcuts import render<br />
+from django.http import HttpResponse</p>
+<p>import redis</p>
+<p>def hello(request):<br />
+    string = redis.<strong>file</strong><br />
+    string += "<br>"<br />
+    r = redis.Redis(host='db', port=6379, db=0)<br />
+    info = r.info()<br />
+    string += ("Set Hi <br>")<br />
+    r.set('Hi', 'HelloWorld-App1')<br />
+    string += ("Get Hi: %s <br>" % r.get('Hi'))<br />
+    string += ("Redis Info: <br>")<br />
+    string += ("Key: Info Value")<br />
+    for key in info:<br />
+        string += ("%s: %s <br>" % (key, info[key]))<br />
+    return HttpResponse(string)<br />
+```</p>
+<p>接下来修改 redisweb 项目的配置文件 <em>setting.py</em>，添加新建的 helloworld 应用：</p>
+<p><code>python
+INSTALLED_APPS = [
+    ...
+    'helloworld',
+]</code></p>
+<p>最后，修改 redisweb 项目的 URL 模式文件 <em>urls.py</em>，它将设置访问应用的 URL 模式，并为 URL 模式调用视图函数之间的映射表。</p>
+<p>```python<br />
+from django.conf.urls import patterns, include, url<br />
+from django.contrib import admin<br />
+from helloworld.views import hello</p>
+<p>urlpatterns = patterns('',<br />
+    url(r'^admin/', include(admin.site.urls)),<br />
+    url(r'^helloworld$', hello),<br />
+)<br />
+```</p>
+<p>在主机下修改完成这几个文件后，需要再次进入容器，在目录 <em>/usr/src/app/dockerweb/redisweb</em> 下完成项目的生成。</p>
+<p><code>shell
+python manage.py makemigrations
+python manage.py migrate
+python manage.py syncdb</code></p>
+<p>至此，所有 APP1 容器的配置已经完成，另一个 APP2 容器配置也是同样的过程，只需要稍作修改即可。配置完成 APP1 和 APP2 容器后，就完成了应用栈的 APP 部分的全部配置。</p>
+<p>在启动 APP 的 Web 服务器时，可以指定服务器的端口和 IP 地址。为了通过 HAProxy 容器节点接受外网所有的公共 IP 地址访问，实现均衡负载，需要指定服务器的 IP 地址和端口。对于 APP1 使用 <code>8001</code> 端口，而 APP2 则使用 <code>8002</code> 端口，同时，都使用 <code>0.0.0.0</code> 地址。</p>
+<p><code>shell
+python manage.py runserver 0.0.0.0:8001</code></p>
+</li>
+<li>
+<p>HAProxy 容器节点的配置</p>
+<p>首先，利用容器启动时挂载的 volume 将 HAProxy 的启动配置文件复制进容器中，在主机的 volume 目录 <em>～/Projects/HAProxy</em> 下。修改 <em>haproxy.cfg</em> 配置文件：</p>
+<p><code>text
+global￼
+    log 127.0.0.1   local0   # 日志输出配置，所有日志都记录在本机，通过 local0 输出￼
+    maxconn 4096    # 最大连接数￼
+    chroot /usr/local/sbin    # 改变当前工作目录￼
+    daemon        # 以后台形式运行HAProxy￼
+    nbproc 4      # 启动4个HAProxy实例￼
+    pidfile /usr/local/sbin/haproxy.pid     # pid文件位置￼
+defaults￼
+    log     127.0.0.1       local3    # 日志文件的输出定向￼
+    mode    http              # { tcp|http|health } 设定启动实例的协议类型￼
+    option dontlognull        # 保证HAProxy不记录上级负载均衡发送过来的用于检测状态没有数据的心跳包￼
+    option redispatch         # 当serverId对应的服务器挂掉后，强制定向到其他健康的服务器￼
+    retries 2                 # 重试两次连接失败就认为服务器不可用，主要通过后面的check检查￼
+    maxconn 2000              # 最大连接数￼
+    balance roundrobin        # balance有两个可用选项：roundrobin和source，其中，roundrobin表示# 轮询，而source表示HAProxy不采用轮询的策略，而是把来自某个IP的请求转# 发给一个固定IP的后端￼
+    timeout connect 5000ms    # 连接超时时间￼
+    timeout client 50000ms    # 客户端连接超时时间￼
+    timeout server 50000ms    # 服务器端连接超时时间￼ listen redis_proxy 0.0.0.0:6301￼
+    stats enable￼
+    stats uri /haproxy-stats￼
+      server APP1 APP1:8001 check inter 2000 rise 2 fall 5    # 你的均衡节点￼
+      server APP2 APP2:8002 check inter 2000 rise 2 fall 5</code></p>
+<p>随后，进入到容器的 volume 目录 <em>/tmp</em> 下，将 HAProxy 的启动配置文件复制到 HAProxy 的工作目录中。</p>
+<p><code>shell
+cd /tmp
+cp haproxy.cfg /usr/local/sbin
+cd /usr/local/sbin</code></p>
+<p>接下来利用该配置文件来启动 HAProxy 代理：</p>
+<p><code>shell
+haproxy -f haproxy.cfg</code></p>
+<p>如果修改了配置文件的内容，需要先结束所有的 HAProxy 进程，并重新启动代理。可以使用 <code>killall</code> 命令来结束进程，如果镜像中没有安装该命令，则需要先安装 <code>psmisc</code> 包：</p>
+<p><code>shell
+apt-get install psmisc
+killall haproxy</code></p>
+<p>至此，完成了 HAProxy 容器节点的全部部署，同时也完成了整个 Docker 应用栈的部署。</p>
+</li>
+<li>
+<p>应用栈访问测试</p>
+<p>参考应用栈搭建时的结构图可知，整个应用栈群的访问是通过 HAProxy 代理节点来进行的。在 HAProxy 容器节点启动时，通过 <code>-p 6301:6301</code> 参数，映射了容器访问的端口到主机上，因此可以在其他主机上，通过本地主机的 IP 地址和端口来访问搭建好的应用栈。</p>
+<p>在应用栈启动后，先在本地主机上进行测试。在浏览器中访问 http://172.17.0.9:6301/helloworld 可以查看 APP1 或 APP2 的页面内容，具体访问到的 APP 容器节点会由 HAProxy 代理进行均衡分配。同时，可以访问 http://172.17.0.9:6301/haproxy-stats 来查看 HAProxy 的后台管理页面。其中，<code>172.17.0.9</code> 为 HAProxy 容器的 IP 地址。</p>
+<p>本地测试通过后，尝试在其他主机上通过应用栈入口主机的 IP 地址和暴露的 <code>6301</code> 端口来访问该应用栈的 APP，即访问 http://10.10.105.87:6301/helloworld。其中，<code>10.10.105.87</code> 为宿主机的 IP 地址。</p>
+</li>
+</ul>
+</li>
+</ol>
+  <div class="relation">
+    <h2>Related</h2>
+    <ul>
+    
+    <li><a href="/wiki/读书笔记/docker容器与容器云<Docker核心原理解读>.html">Docker 核心原理解读</a></li>
+    
+    </ul>
+  </div>
+    </div>
+    <div id="footer">
+      <span>
+        <p>Copyright © 2020 .
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+        <p>Site Generated 2020-05-13 23:25:02</p>
+      </span>
+    </div>
+
+    
+    
+  </body>
+</html>

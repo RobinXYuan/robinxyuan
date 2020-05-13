@@ -26,7 +26,7 @@
 <div class="page_title">网络编程实战 <基础篇></div>
 
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
-<li><a href="#tcpiplinux">追古溯源：TCP/IP和Linux是如何改变世界的？</a><ul>
+<li><a href="#tcpip-linux">TCP/IP 和 Linux 发展史</a><ul>
 <li><a href="#tcpip">TCP/IP 发展历史</a><ul>
 <li><a href="#osi-tcpip">OSI &amp; TCP/IP</a></li>
 </ul>
@@ -48,10 +48,22 @@
 <li><a href="#tcpip_1">操作系统对 TCP/IP 的支持</a></li>
 </ul>
 </li>
-<li><a href="#-">网络编程模型：认识客户端-服务器网络模型的基本概念</a></li>
+<li><a href="#_1">网络编程模型</a><ul>
+<li><a href="#-">客户端 - 服务器网络编程模型</a></li>
+<li><a href="#ip">IP 和端口</a><ul>
+<li><a href="#_2">保留网段</a></li>
+</ul>
+</li>
+<li><a href="#_3">数据报和字节流</a></li>
+</ul>
+</li>
+<li><a href="#_4">套接字和地址</a><ul>
+<li><a href="#socket">socket</a></li>
+</ul>
+</li>
 </ul>
 </div>
-<h1 id="tcpiplinux">追古溯源：TCP/IP和Linux是如何改变世界的？</h1>
+<h1 id="tcpip-linux">TCP/IP 和 Linux 发展史</h1>
 <h2 id="tcpip">TCP/IP 发展历史</h2>
 <h3 id="osi-tcpip">OSI &amp; TCP/IP</h3>
 <p><img alt="OSI-TCP/IP" src="/wiki/images/geektime/network-programming/cb34e0e3b7769498ea703fe6231201b4.png" /></p>
@@ -105,13 +117,73 @@
 <p>斯托曼主张，Linux 操作系统使用了许多 GNU 软件，正式名应为 GNU/Linux，但没有得到 Linux 社群的一致认同，形成著名的 GNU/Linux 命名争议。</p>
 <h2 id="tcpip_1">操作系统对 TCP/IP 的支持</h2>
 <p><img alt="OSI-TCP/IP" src="/wiki/images/geektime/network-programming/0f783e74927d70794421cf5983f22ae1.png" /></p>
-<h1 id="-">网络编程模型：认识客户端-服务器网络模型的基本概念</h1>
+<h1 id="_1">网络编程模型</h1>
+<h2 id="-">客户端 - 服务器网络编程模型</h2>
+<p><img alt="client-server-model" src="/wiki/images/geektime/network-programming/78e415180d2946c418485d30f3f78f83.png" /></p>
+<h2 id="ip">IP 和端口</h2>
+<p>在 TCP/IP 协议栈中，IP 用来表示网络世界的地址。</p>
+<p>端口号是一个 16 位的整数，最多为 65536。当一个客户端发起连接请求时，客户端的端口是由操作系统内核临时分配的，称为 <strong>临时端口</strong>；服务器端的端口通常是一个众所周知的端口。</p>
+<p>一个连接可以通过客户端 - 服务器端的 IP 和端口唯一确定，称做套接字对：</p>
+<div class="hlcode"><pre><span class="p">(</span><span class="n">clientaddr</span><span class="o">:</span><span class="n">clientport</span><span class="p">,</span> <span class="n">serveraddr</span><span class="o">:</span><span class="n">serverport</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="_2">保留网段</h3>
+<p>国际标准组织在 IPv4 地址空间里面，专门划出了一些网段，这些网段不会用做公网上的 IP，而是仅仅保留作内部使用，我们把这些地址称作 <strong>保留网段</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>RFC1918 name</th>
+<th>IP address range</th>
+<th>Number of addresses</th>
+<th>Largest CIDR block (subnet mask)</th>
+<th>Host ID size</th>
+<th>Mask bits</th>
+<th>Classful description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>24-bit block</td>
+<td>10.0.0.0 - 10.255.255.255</td>
+<td>16 777 216</td>
+<td>10.0.0.0/8 (255.0.0.0)</td>
+<td>24 bits</td>
+<td>8 bits</td>
+<td>single class A network</td>
+</tr>
+<tr>
+<td>20-bit block</td>
+<td>172.16.0.0 - 172.31.255.255</td>
+<td>1 048 576</td>
+<td>172.16.0.0/12 (255.240.0.0)</td>
+<td>20 bits</td>
+<td>12 bits</td>
+<td>16 contiguout class B network</td>
+</tr>
+<tr>
+<td>16-bit block</td>
+<td>192.168.0.0 - 192.168.255.255</td>
+<td>65 536</td>
+<td>192.168.0.0/16 (255.255.0.0)</td>
+<td>16 bits</td>
+<td>16 bits</td>
+<td>256 contiguout class C network</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_3">数据报和字节流</h2>
+<p>TCP，又被叫做 <strong>字节流套接字（Stream Socket）</strong>，表示为 <code>SOCK_STREAM</code>。</p>
+<p>UDP 又被称为 <strong>数据报套接字（Datagram Socket）</strong>，表示为 <code>SOCK_DGRAM</code>。</p>
+<p>Datagram Sockets 有时称为“无连接的 sockets”（connectionless sockets）。Stream sockets 是可靠的、双向连接的通讯串流。</p>
+<h1 id="_4">套接字和地址</h1>
+<h2 id="socket">socket</h2>
     </div>
     <div id="footer">
       <span>
         <p>Copyright © 2020 .
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2020-05-04 18:18:45</p>
+        <p>Site Generated 2020-05-13 23:25:02</p>
       </span>
     </div>
 

@@ -1,0 +1,280 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <link rel="Stylesheet" type="text/css" href="/wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/wiki/favicon.ico" type="image/x-icon">
+    <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+    <title>Docker 核心原理解读 - </title>
+    <meta name="keywords" content=""/>
+    <meta name="description" content=""/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+
+  <body>
+    <div id="container">
+      
+<div id="header">
+  <div class="post-nav"><a href="/wiki/">Home</a>&nbsp;&#187;&nbsp;<a href="/wiki/#读书笔记">读书笔记</a>&nbsp;&#187;&nbsp;Docker 核心原理解读
+    <span class="updated">Page Updated&nbsp;
+      2020-05-02 10:28
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">Docker 核心原理解读</div>
+
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#docker">Docker 背后的内核知识</a><ul>
+<li><a href="#namespace">namespace 资源隔离</a><ul>
+<li><a href="#6">容器的 6 项隔离</a></li>
+<li><a href="#namespace-api-4">进行 namespace API 操作的 4 种方式</a><ul>
+<li><a href="#clone-namespace">通过 clone() 在创建新进程的同时创建 namespace</a></li>
+<li><a href="#procpidns">查看 /proc/[pid]/ns 文件</a></li>
+<li><a href="#setns-namespace">通过 setns() 加入一个已经存在的 namespace</a></li>
+<li><a href="#unshare-namespace">通过 unshare() 在原先进程上进行 namespace 隔离</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#include">include <unistd.h></a></li>
+<li><a href="#include_1">include <stdio.h></a><ul>
+<li><a href="#uts-namespace">UTS namespace</a></li>
+<li><a href="#ipc-namespace">IPC namespace</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="docker">Docker 背后的内核知识</h1>
+<h2 id="namespace">namespace 资源隔离</h2>
+<h3 id="6">容器的 6 项隔离</h3>
+<ul>
+<li>
+<p>文件系统隔离</p>
+<p>通过 <code>chroot</code> 命令更改根目录 <code>/</code> 的挂载点，实现文件系统的隔离。</p>
+</li>
+<li>
+<p>网络隔离</p>
+<p>为了在分布式的环境下进行通信和定位，容器必然要有独立的 IP、端口、路由等。</p>
+</li>
+<li>
+<p>主机名隔离</p>
+<p>容器还需要一个独立的主机名以便在网络中标识自己。</p>
+</li>
+<li>
+<p>进程间通信隔离    </p>
+<p>有了网络，自然离不开通信，也就想到了进程间通信需要隔离。</p>
+</li>
+<li>
+<p>用户权限隔离</p>
+<p>对用户和用户组的隔离就实现了用户权限的隔离。</p>
+</li>
+<li>
+<p>PID 隔离    </p>
+<p>运行在容器中的应用需要有进程号（PID），自然也需要与宿主机中的 PID 进行隔离。</p>
+</li>
+</ul>
+<p>Linux 内核中提供了这 6 种 namespace 隔离的系统调用：</p>
+<table>
+<thead>
+<tr>
+<th>namespace</th>
+<th>系统调用参数</th>
+<th>隔离内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UTS</td>
+<td><code>CLONE_NEWUTS</code></td>
+<td>主机名与域名</td>
+</tr>
+<tr>
+<td>IPC</td>
+<td><code>CLONE_NEWIPC</code></td>
+<td>信号量、消息队列和共享内存</td>
+</tr>
+<tr>
+<td>PID</td>
+<td><code>CLONE_NEWPID</code></td>
+<td>进程编号</td>
+</tr>
+<tr>
+<td>Network</td>
+<td><code>CLONE_NEWNET</code></td>
+<td>网络设备、网络栈、端口等</td>
+</tr>
+<tr>
+<td>Mount</td>
+<td><code>CLONE_NEWNS</code></td>
+<td>挂载点（文件系统）</td>
+</tr>
+<tr>
+<td>User</td>
+<td><code>CLONE_NEWUSER</code></td>
+<td>用户和用户组</td>
+</tr>
+</tbody>
+</table>
+<p>Linux 内核实现 namespace 的一个主要目的，就是 <strong>实现轻量级虚拟化（容器）服务</strong>。在同一个 namespace 下的进程可以感知彼此的变化，而对外界的进程一无所知。这样就可以让容器中的进程产生错觉，仿佛自己置身于一个独立的系统环境中，以达到独立和隔离的目的。</p>
+<h3 id="namespace-api-4">进行 namespace API 操作的 4 种方式</h3>
+<h4 id="clone-namespace">通过 <code>clone()</code> 在创建新进程的同时创建 namespace</h4>
+<p>这是最常见的做法，也是 Docker 使用 namespace 最基本的方法，它的调用方式如下。</p>
+<div class="hlcode"><pre><span class="kt">int</span> <span class="nf">clone</span><span class="p">(</span><span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">child_func</span><span class="p">)(</span><span class="kt">void</span> <span class="o">*</span><span class="p">),</span> <span class="kt">void</span> <span class="o">*</span><span class="n">child_stack</span><span class="p">,</span> <span class="kt">int</span> <span class="n">flags</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">);</span>
+</pre></div>
+
+
+<p><code>clone()</code> 实际上是 Linux 系统调用 <code>fork()</code> 的一种更通用的实现方式，它可以通过 <code>flags</code> 来控制使用多少功能。</p>
+<ul>
+<li><code>child_func</code>：传入子进程运行的程序主函数</li>
+<li><code>child_stack</code>：传入子进程使用的栈空间</li>
+<li><code>flags</code>：表示使用哪些 <code>CLONE_*</code> 标志位。一共有 20 多种 <code>CLONE_*</code> 的 <code>flag</code>（标志位）参数。与 namespace 相关的有：<ul>
+<li><code>CLONE_NEWIPC</code></li>
+<li><code>CLONE_NEWNS</code></li>
+<li><code>CLONE_NEWNET</code></li>
+<li><code>CLONE_NEWPID</code></li>
+<li><code>CLONE_N</code></li>
+<li><code>CLONE_NEWUTS</code></li>
+</ul>
+</li>
+<li><code>args</code>：用于传入用户参数</li>
+</ul>
+<h4 id="procpidns">查看 <em>/proc/[pid]/ns</em> 文件</h4>
+<p><strong>从 3.8 版本的内核开始</strong>，用户就可以在 <em>/proc/[pid]/ns</em> 文件下看到指向不同 namespace 号的文件。</p>
+<div class="hlcode"><pre><span class="err">$</span> <span class="n">ls</span> <span class="o">-</span><span class="n">l</span> <span class="o">/</span><span class="n">proc</span><span class="o">/</span><span class="err">$$</span><span class="o">/</span><span class="n">ns</span>  <span class="err">#</span> <span class="err">$$</span> <span class="err">是</span> <span class="n">shell</span> <span class="err">中表示当前运行的进程</span> <span class="n">PID</span>
+<span class="n">total</span> <span class="mi">0</span><span class="err">￼</span>
+<span class="n">lrwxrwxrwx</span><span class="p">.</span> <span class="mi">1</span> <span class="n">mtk</span> <span class="n">mtk</span> <span class="mi">0</span> <span class="n">Jan</span>  <span class="mi">8</span> <span class="mo">04</span><span class="o">:</span><span class="mi">12</span> <span class="n">ipc</span> <span class="o">-&gt;</span> <span class="n">ipc</span><span class="o">:</span><span class="p">[</span><span class="mi">4026531839</span><span class="p">]</span><span class="err">￼</span>
+<span class="n">lrwxrwxrwx</span><span class="p">.</span> <span class="mi">1</span> <span class="n">mtk</span> <span class="n">mtk</span> <span class="mi">0</span> <span class="n">Jan</span>  <span class="mi">8</span> <span class="mo">04</span><span class="o">:</span><span class="mi">12</span> <span class="n">mnt</span> <span class="o">-&gt;</span> <span class="n">mnt</span><span class="o">:</span><span class="p">[</span><span class="mi">4026531840</span><span class="p">]</span><span class="err">￼</span>
+<span class="n">lrwxrwxrwx</span><span class="p">.</span> <span class="mi">1</span> <span class="n">mtk</span> <span class="n">mtk</span> <span class="mi">0</span> <span class="n">Jan</span>  <span class="mi">8</span> <span class="mo">04</span><span class="o">:</span><span class="mi">12</span> <span class="n">net</span> <span class="o">-&gt;</span> <span class="n">net</span><span class="o">:</span><span class="p">[</span><span class="mi">4026531956</span><span class="p">]</span><span class="err">￼</span>
+<span class="n">lrwxrwxrwx</span><span class="p">.</span> <span class="mi">1</span> <span class="n">mtk</span> <span class="n">mtk</span> <span class="mi">0</span> <span class="n">Jan</span>  <span class="mi">8</span> <span class="mo">04</span><span class="o">:</span><span class="mi">12</span> <span class="n">pid</span> <span class="o">-&gt;</span> <span class="n">pid</span><span class="o">:</span><span class="p">[</span><span class="mi">4026531836</span><span class="p">]</span><span class="err">￼</span>
+<span class="n">lrwxrwxrwx</span><span class="p">.</span> <span class="mi">1</span> <span class="n">mtk</span> <span class="n">mtk</span> <span class="mi">0</span> <span class="n">Jan</span>  <span class="mi">8</span> <span class="mo">04</span><span class="o">:</span><span class="mi">12</span> <span class="n">user</span><span class="o">-&gt;</span><span class="n">user</span><span class="o">:</span><span class="p">[</span><span class="mi">4026531837</span><span class="p">]</span><span class="err">￼</span>
+<span class="n">lrwxrwxrwx</span><span class="p">.</span> <span class="mi">1</span> <span class="n">mtk</span> <span class="n">mtk</span> <span class="mi">0</span> <span class="n">Jan</span>  <span class="mi">8</span> <span class="mo">04</span><span class="o">:</span><span class="mi">12</span> <span class="n">uts</span> <span class="o">-&gt;</span> <span class="n">uts</span><span class="o">:</span><span class="p">[</span><span class="mi">4026531838</span><span class="p">]</span>
+</pre></div>
+
+
+<p>如果两个进程指向的 namespace 编号相同，就说明它们在同一个 namespace 下。</p>
+<p><em>/proc/[pid]/ns</em> 里设置这些 link 的的另外一个作用是，一旦上述 link 文件被打开，只要打开的文件描述符（fd）存在，那么就算该 namespace 下的所有进程都已经结束，这个 namespace 也会一直存在，后续进程也可以再加入进来。在 Docker 中，通过文件描述符定位和加入一个存在的 namespace 是最基本的方式。在 Docker 中，使用 <code>docker exec</code> 命令在已经运行着的容器中执行一个新的命令，就需要用到该方法。</p>
+<p>另外，把 <em>/proc/[pid]/ns</em> 目录文件使用 <code>--bind</code> 方式挂载起来可以起到同样的作用：</p>
+<div class="hlcode"><pre><span class="err">$</span> <span class="n">touch</span> <span class="o">~/</span><span class="n">uts</span>
+<span class="err">$</span> <span class="n">mount</span> <span class="o">--</span><span class="n">bind</span> <span class="o">/</span><span class="n">proc</span><span class="o">/</span><span class="mi">27514</span><span class="o">/</span><span class="n">ns</span><span class="o">/</span><span class="n">uts</span> <span class="o">~/</span><span class="n">uts</span>
+</pre></div>
+
+
+<h4 id="setns-namespace">通过 <code>setns()</code> 加入一个已经存在的 namespace</h4>
+<p>通过 <code>setns()</code> 系统调用，进程从原先的 namespace 加入某个已经存在的 namespace。</p>
+<div class="hlcode"><pre><span class="kt">int</span> <span class="nf">setns</span><span class="p">(</span><span class="kt">int</span> <span class="n">fd</span><span class="p">,</span> <span class="kt">int</span> <span class="n">nstype</span><span class="p">);</span>
+</pre></div>
+
+
+<ul>
+<li><code>fd</code>：表示要加入 namespace 的文件描述符。它是一个指向 <em>/proc/[pid]/ns</em> 目录的文件描述符，可以通过直接打开该目录下的链接或者打开一个挂载了该目录下链接的文件得到</li>
+<li><code>nstype</code>：让调用者可以检查 <code>fd</code> 指向的 namespace 类型是否符合实际要求。为 0 表示不检查</li>
+</ul>
+<p>通常为了不影响进程的调用者，也为了使新加入的 pid namespace 生效，会在 <code>setns()</code> 函数执行后使用 <code>clone()</code> 创建子进程继续执行命令，让原先的进程结束运行。</p>
+<p>为了把新加入的 namespace 利用起来，需要引入 <code>execve()</code> 系列函数，该函数可以执行用户命令，最常用的就是调用 <em>/bin/bash</em> 并接受参数，运行起一个 shell。</p>
+<div class="hlcode"><pre><span class="n">fd</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">O_RDONLY</span><span class="p">);</span>   <span class="cm">/* 获取 namespace 文件描述符 */</span>
+<span class="n">setns</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>                   <span class="cm">/* 加入新的 namespace */</span>
+<span class="n">execvp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="o">&amp;</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>      <span class="cm">/* 执行程序 */</span>
+</pre></div>
+
+
+<h4 id="unshare-namespace">通过 <code>unshare()</code> 在原先进程上进行 namespace 隔离</h4>
+<p><code>unshare()</code> 与 <code>clone()</code> 很像，不同的是，<code>unshare()</code> 运行在原先的进程上，不需要启动一个新进程。</p>
+<div class="hlcode"><pre><span class="kt">int</span> <span class="nf">unshare</span><span class="p">(</span><span class="kt">int</span> <span class="n">flags</span><span class="p">);</span>
+</pre></div>
+
+
+<p>调用 <code>unshare()</code> 的主要作用就是，不启动新进程就可以起到隔离的效果，相当于跳出原先的 namespace 进行操作。这样，就可以在原进程进行一些需要隔离的操作。Linux 中自带的 <code>unshare</code> 命令，就是通过 <code>unshare()</code> 系统调用实现的。</p>
+<p><strong>Docker 目前并没有使用这个系统调用。</strong></p>
+<blockquote>
+<p><strong><code>fork()</code> 系统调用</strong></p>
+<p>当程序调用 <code>fork()</code> 函数时，系统会创建新的进程，为其分配资源，例如存储数据和代码的空间，然后把原来进程的所有值都复制到新进程中，只有少量数值与原来的进程值不同，相当于复制了本身。</p>
+<p><code>fork()</code> 的神奇之处在于它仅仅被调用一次，却能够返回两次（父进程与子进程各返回一次），通过返回值的不同就可以区分父进程与子进程。它可能有以下 3 种不同的返回值：</p>
+<ul>
+<li>在父进程中，<code>fork()</code> 返回新创建子进程的进程 ID</li>
+<li>在子进程中，<code>fork()</code> 返回 0</li>
+<li>如果出现错误，<code>fork()</code> 返回一个负值</li>
+</ul>
+<p>例如：</p>
+<p>```cpp</p>
+<h1 id="include">include <unistd.h></h1>
+<h1 id="include_1">include <stdio.h></h1>
+<p>int main() {<br />
+    pid_t fpid;   // 表示 fork 函数返回的值<br />
+    int count = 0;<br />
+    fpid = fork();<br />
+    if (fpid &lt; 0) printf("error in fork!");<br />
+    else if (fpid == 0) {<br />
+        printf("I am child. Process id is %d\n", getpid());<br />
+    } else {<br />
+        printf("I am parent. Process id is %d\n", getpid());<br />
+    }<br />
+    return 0;<br />
+}<br />
+```</p>
+</blockquote>
+<h3 id="uts-namespace">UTS namespace</h3>
+<p><strong>UTS（UNIX Time-sharing System）namespace</strong> 提供了主机名和域名的隔离，这样每个 Docker 容器就可以拥有独立的主机名和域名了，在网络上可以被视作一个独立的节点，而非宿主机上的一个进程。Docker 中，每个镜像基本都以自身所提供的服务名称来命名镜像的 hostname，且不会对宿主机产生任何影响，其原理就是利用了 UTS namespace。</p>
+<div class="hlcode"><pre><span class="cp">#define _GNU_SOURCE</span>
+<span class="cp">#include &lt;sys/types.h&gt;</span>
+<span class="cp">#include &lt;sys/wait.h&gt;</span>
+<span class="cp">#include &lt;stdio.h&gt;</span>
+<span class="cp">#include &lt;sched.h&gt;</span>
+<span class="cp">#include &lt;signal.h&gt;</span>
+<span class="cp">#include &lt;unistd.h&gt;</span>
+
+<span class="cp">#define STACK_SIZE (1024 * 1024)</span>
+
+<span class="k">static</span> <span class="kt">char</span> <span class="n">child_stack</span><span class="p">[</span><span class="n">STACK_SIZE</span><span class="p">];</span>
+
+<span class="kt">char</span><span class="o">*</span> <span class="k">const</span> <span class="n">child_args</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&quot;/bin/bash&quot;</span><span class="p">,</span>
+    <span class="nb">NULL</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="nf">child_main</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">args</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;在子进程中！</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+    <span class="n">sethostname</span><span class="p">(</span><span class="s">&quot;NewNamespace&quot;</span><span class="p">,</span> <span class="mi">12</span><span class="p">);</span>
+    <span class="n">execv</span><span class="p">(</span><span class="n">child_args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">child_args</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;程序开始：</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+    <span class="kt">int</span> <span class="n">child_pid</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">child_main</span><span class="p">,</span> <span class="n">child_stack</span> <span class="o">+</span> <span class="n">STACK_SIZE</span><span class="p">,</span> <span class="n">CLONE_NEWUTS</span> <span class="o">|</span> <span class="n">SIGCHLD</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="n">waitpid</span><span class="p">(</span><span class="n">child_pid</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">&quot;已退出</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<blockquote>
+<p><strong>WARNING</strong></p>
+<p>不加 <code>CLONE_NEWUTS</code> 参数进行隔离时，由于使用 <code>sethostname</code> 函数，所以宿主机的主机名被修改了。而看到 <code>exit</code> 退出后主机名还原，是因为 bash 只在刚登录时读取一次 UTS，不会实时读取最新的主机名。当重新登录或者使用 uname 命令进行查看时，就会发现产生的变化。</p>
+</blockquote>
+<h3 id="ipc-namespace">IPC namespace</h3>
+  <div class="relation">
+    <h2>Related</h2>
+    <ul>
+    
+    <li><a href="/wiki/读书笔记/docker容器与容器云<Docker的优势及基本使用>.html">Docker 的优势及基本使用</a></li>
+    
+    </ul>
+  </div>
+    </div>
+    <div id="footer">
+      <span>
+        <p>Copyright © 2020 .
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+        <p>Site Generated 2020-05-13 23:25:02</p>
+      </span>
+    </div>
+
+    
+    
+  </body>
+</html>
