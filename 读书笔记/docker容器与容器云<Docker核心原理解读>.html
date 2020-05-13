@@ -36,14 +36,10 @@
 <li><a href="#unshare-namespace">通过 unshare() 在原先进程上进行 namespace 隔离</a></li>
 </ul>
 </li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="#include">include <unistd.h></a></li>
-<li><a href="#include_1">include <stdio.h></a><ul>
 <li><a href="#uts-namespace">UTS namespace</a></li>
 <li><a href="#ipc-namespace">IPC namespace</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -198,23 +194,6 @@
 <li>在子进程中，<code>fork()</code> 返回 0</li>
 <li>如果出现错误，<code>fork()</code> 返回一个负值</li>
 </ul>
-<p>例如：</p>
-<p>```cpp</p>
-<h1 id="include">include <unistd.h></h1>
-<h1 id="include_1">include <stdio.h></h1>
-<p>int main() {<br />
-    pid_t fpid;   // 表示 fork 函数返回的值<br />
-    int count = 0;<br />
-    fpid = fork();<br />
-    if (fpid &lt; 0) printf("error in fork!");<br />
-    else if (fpid == 0) {<br />
-        printf("I am child. Process id is %d\n", getpid());<br />
-    } else {<br />
-        printf("I am parent. Process id is %d\n", getpid());<br />
-    }<br />
-    return 0;<br />
-}<br />
-```</p>
 </blockquote>
 <h3 id="uts-namespace">UTS namespace</h3>
 <p><strong>UTS（UNIX Time-sharing System）namespace</strong> 提供了主机名和域名的隔离，这样每个 Docker 容器就可以拥有独立的主机名和域名了，在网络上可以被视作一个独立的节点，而非宿主机上的一个进程。Docker 中，每个镜像基本都以自身所提供的服务名称来命名镜像的 hostname，且不会对宿主机产生任何影响，其原理就是利用了 UTS namespace。</p>
@@ -270,7 +249,7 @@
       <span>
         <p>Copyright © 2020 .
         Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
-        <p>Site Generated 2020-05-13 23:25:02</p>
+        <p>Site Generated 2020-05-13 23:28:34</p>
       </span>
     </div>
 
